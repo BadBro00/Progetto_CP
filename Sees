@@ -1,0 +1,105 @@
+//WSL per tutto
+-----------------------------------CREAZIONE CLUSTER DOCKER--------------------------
+wget https://raw.githubusercontent.com/delucap/Docker_MPI/main/Dockerfile //Per scaricare il Dockerfile dal github di Deluca
+
+docker build -t cpd_mpi . //Per buildare il docker file [COPIARE ANCHE IL . !!!!]
+
+docker run -it -d -t cpd_mpi:latest
+docker ps 
+docker start -i <id_istanza>
+
+//Per ogni istanza, eseguire ciascuno dei comandi: 
+git clone https://github.com/delucap/Docker_MPI.git
+sh user.sh //Crea l'utente cpd2021, la cui pw e' il nome utente
+
+//Per ogni nodo eseguire
+ifconfig
+
+sh setup.sh <IP_1> <IP_2> <IP_3> <IP_4>
+---------------------------------------
+//Procediamo al cambio keys e Utenti
+su cpd2021.
+
+//Per OGNI NODO, eseguire: [CREA 1 MASTER e 3 SLAVE]
+ssh-copy-id master
+ssh-copy-id node01
+ssh-copy-id node02
+ssh-copy-id node03
+
+-----------------------------------
+//Ci connettiamo al nodo MASTER dal cluster AWS:
+ssh -i cpd1.pem ubuntu@<master_node>
+//Accediamo all'utente cpd2021
+su cpd1 //[PASSWORD: cpd2021]
+//Effettuiamo il test ssh fra tutti i nodi (e' indicato stesso dal cmd)
+
+//Effettuaiamo il login al nodo Master dal cluster DOCKER:
+docker start -i <id_master_node>
+//Accediamo all'utente cpd2021
+su cpd1 //[PASSWORD: cpd2021]
+//Effettuiamo il test ssh fra tutti i nodi (e' indicato stesso dal cmd)
+
+--------------------CONFIGURAZIONE MACHINEFILE------------------
+//Tramite gedit,vi, o vim, aprire un file testo e digitare:
+              master slots=4
+              node01 slots=4
+              node02 slots=4
+              node03 slots=4
+//Il numero di slots è relativo al massimo numero di processori uilizzabili per ogni nodo.
+//Salviamolo come esercizio1.c
+
+//-----------------------ESECUZIONE AWS-------------------------
+//Compiliamo il file con:
+mpicc esercizio1.c -o esercizio1 [oppure mpicc esercizio1.c, per poi eseguirlo come a.out]
+
+//Effettuiamo il download dello script bash per effettuare un’esecuzione distribuita:
+wget https://github.com/delucap/CPD1-AWSTest/blob/master/employAWS.sh
+-------------------------ESECUZIONE DOCKER----------------------
+//Eseguiamo il programma con:
+mpirun <nomefile> [esercizio1 OPPURE a.out]
+
+-----------------------------------------------------------------------
+ESERCIZIO 1 DI DELUCA
+#include <mpi.h>
+#include <stdio.h>
+int main (int argc , char ∗∗argv) {
+//Initialize the MPI environment
+MPI_Init (NULL, NULL) ;
+int world_size;
+MPI_Comm_size(MPI_COMM_WORLD, &world_size ) ;
+int world_rank ;
+MPI_Comm_rank(MPI_COMM_WORLD, &world_rank ) ;
+char processor_name [MPI_MAX_PROCESSOR_NAME ] ;
+int name_len ;
+MPI_Get_processor_name ( processor_name , &name_len ) ;
+printf (” Hello world from processor %s , rank %d out of %d processors \n” ,processor_name , world_rank , world_size) ;
+// Finalize the MPI environment.
+MPI_Finalize();
+}
+-----------------------EMPLOY.SH------------------
+#!/ bin /bash
+if [ ” $1” != ”” ] ; then
+echo ” Starting MPI employing ”
+else
+echo ” Insert arguments : <machine file > <nProcessors> ... <executableFile >\n”
+exit
+fi{
+scp $3 node01 : / home/cpd2021 /
+scp $3 node02 : / home/cpd2021 /
+scp $3 node03 : / home/cpd2021 /
+} &> /dev/ n ull
+cp $3 /home/cpd2021 /
+mpirun --hostfile $1 -np $2 /home/cpd2021 /$3
+----------------------------SINTASSI ESECUZIONE SH--------------
+sh employ.sh <machinefile> <np> <executable>
+//sh-> lancia script sh
+//employ.sh-> indica lo script sh
+//<machinefile>->quale machinefile usare
+//<np>-> numero processori da usare
+//<executable>->file da runnare
+
+----------------------------ALTRE ISTRUZIONI UTILI------------
+docker stop <id_istanza> (per terminare un’istanza attiva)
+docker image ls (per visualizzare le immagini delle macchine virtuali installate)
+docker rmi <id_immage> (per eliminare una specifica immagine)
+docker kill $(docker ps -q) (per terminare tutte le istanze attive)
