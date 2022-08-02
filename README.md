@@ -8,4 +8,4 @@ Calcolo_Parallelo
 
 3) Piu' avanti facciamo la 'Code With Me' di CLion per programmare tutti insieme
 
-4) Culi
+4) Nella directory (Cartella, Aniello...) ci mettiamo tutto il codice [comprese le librerie] del progetto
