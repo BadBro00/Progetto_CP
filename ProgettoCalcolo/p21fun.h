@@ -21,12 +21,6 @@ struct matrix {
 };
 
 
-struct offset {
-    int x;
-    int y;
-};
-
-
 // Returns no of digits of an int
 int int_digits_no(int num);
 
