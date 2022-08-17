@@ -45,6 +45,7 @@ int main(int argc, char * argv[]) {
            "block_no: %d\n\n",
            np, np*np, matrix->M, matrix->M/np, np*np);
 
+    
     // Setting number of threads
     omp_set_num_threads(np*np);
 
