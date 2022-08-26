@@ -12,12 +12,18 @@
 #include <math.h>
 
 
-#define MAX_RAND 200
+#define MAX_RAND 9
 
 
 struct matrix {
     int ** mtx_ptr;
     int M;
+};
+
+
+struct offset {
+    int x;
+    int y;
 };
 
 
@@ -71,5 +77,11 @@ struct offset offset_gen();
 
 // Returns the (M/np)x(M/np) block
 struct matrix * matrix_block_extract(struct matrix * mtx, int np, int np_no);
+
+// Returns an npxnp matrix with all elements initialized to 0
+struct matrix * initialize_sum_matrix(int size);
+
+// Returns the sum of mat1 and mat2
+struct matrix * matrix_sum(struct matrix * mat1, struct matrix * mat2);
 
 #endif //PROGETTOCALCOLO_P21FUN_H

@@ -36,7 +36,8 @@ int main(int argc, char * argv[]) {
     matrix_square_print(matrix->mtx_ptr, matrix->M);
     printf("\n");
 
-    printf("[Core master]:\n"
+    // printing data
+    printf("[MASTER THREAD]:\n"
            "RECAP:\n"
            "np: %d\n"
            "npxnp: %d\n"
@@ -45,19 +46,25 @@ int main(int argc, char * argv[]) {
            "block_no: %d\n\n",
            np, np*np, matrix->M, matrix->M/np, np*np);
 
-    
-    // Setting number of threads
+
+    // Setting number of threads for parallel region 1
     omp_set_num_threads(np*np);
 
 
-    // Array of matrix pointers
+    // Allocating array of matrix pointers
     struct matrix * mtx_array = (struct matrix *) malloc(sizeof(struct matrix) * (np*np));
 
+    // Other useful data
+    int tid;
 
-    // Block extraction
-    #pragma omp parallel default(none), shared(matrix, np, mtx_array)
+    // [PARALLEL REGION 1]
+    #pragma omp parallel default(none), shared(matrix, np, mtx_array), private(tid)
     {
-        mtx_array[omp_get_thread_num()] = * matrix_block_extract(matrix, np, omp_get_thread_num());
+        // Tid assignation
+        tid = omp_get_thread_num();
+
+        // Block extraction
+        mtx_array[tid] = * matrix_block_extract(matrix, np, tid);
     }
 
 
@@ -68,6 +75,61 @@ int main(int argc, char * argv[]) {
         printf("\n");
     }
 
-    
+
+    // Setting number of threads for parallel region 2
+    omp_set_num_threads(np);
+
+    // Allocating and initializating sum matrix
+    struct matrix * sum_matrix = initialize_sum_matrix(matrix->M/np);
+
+    // Temp sum matrix pointer
+    struct matrix * temp_sum;
+
+    // Other useful data
+    int nloc;
+    int actual_threads_no;
+    int reminder;
+    int step;
+
+    // [PARALLEL REGION 2]
+    #pragma omp parallel default(none), shared(np, mtx_array, sum_matrix, reminder), private(tid, nloc, temp_sum, actual_threads_no, step)
+    {
+        // Initializing threads no, tid and other data
+        actual_threads_no = omp_get_num_threads();
+        tid = omp_get_thread_num();
+        nloc = (np*np) / actual_threads_no;
+        reminder = (np*np) % actual_threads_no;
+
+        printf("[Core %d]: t_no = %d, nloc = %d, r = %d\n", tid, actual_threads_no, nloc, reminder);
+
+        // Allocating temp sum matrix pointer
+        temp_sum = initialize_sum_matrix(sum_matrix->M);
+
+        // *** DEBUG *** printf("[Core %d]: sum_mtx:\n", tid); matrix_square_print(temp_sum->mtx_ptr, temp_sum->M);
+
+
+        // Job subdivision
+        if (tid < reminder) {
+            nloc++;
+            step = 0;
+        }
+        else {
+            step = reminder;
+        }
+
+
+        // SUM ALGORITHM
+        for (int i = 0; i < nloc; ++i) {
+            temp_sum = matrix_sum(temp_sum, &mtx_array[i + nloc * tid + step]);
+        }
+        sum_matrix = matrix_sum(sum_matrix, temp_sum);
+    }
+
+
+    // Printing sum matrix
+    printf("[Core %d]: Sum matrix: \n", omp_get_thread_num());
+    matrix_square_print(sum_matrix->mtx_ptr, sum_matrix->M);
+
+
     return 0;
 }
