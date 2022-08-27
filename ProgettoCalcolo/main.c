@@ -46,6 +46,8 @@ int main(int argc, char * argv[]) {
            "block_no: %d\n\n",
            np, np*np, matrix->M, matrix->M/np, np*np);
 
+    if (np > matrix->M) easy_stderr("np must be <= M!", -1);
+
 
     // Setting number of threads for parallel region 1
     omp_set_num_threads(np*np);
@@ -92,6 +94,9 @@ int main(int argc, char * argv[]) {
     int step;
 
     // [PARALLEL REGION 2]
+    // Parallel start time
+    double parallel_init_time = omp_get_wtime();
+
     #pragma omp parallel default(none), shared(np, mtx_array, sum_matrix, reminder), private(tid, nloc, temp_sum, actual_threads_no, step)
     {
         // Initializing threads no, tid and other data
@@ -100,7 +105,8 @@ int main(int argc, char * argv[]) {
         nloc = (np*np) / actual_threads_no;
         reminder = (np*np) % actual_threads_no;
 
-        printf("[Core %d]: t_no = %d, nloc = %d, r = %d\n", tid, actual_threads_no, nloc, reminder);
+        // *** DEBUG *** printf("[Core %d]: t_no = %d, nloc = %d, r = %d\n\n", tid, actual_threads_no, nloc, reminder);
+
 
         // Allocating temp sum matrix pointer
         temp_sum = initialize_sum_matrix(sum_matrix->M);
@@ -122,13 +128,53 @@ int main(int argc, char * argv[]) {
         for (int i = 0; i < nloc; ++i) {
             temp_sum = matrix_sum(temp_sum, &mtx_array[i + nloc * tid + step]);
         }
-        sum_matrix = matrix_sum(sum_matrix, temp_sum);
+
+        #pragma omp critical
+            sum_matrix = matrix_sum(sum_matrix, temp_sum);
     }
+
+    // Parallel end time
+    double parallel_end_time = omp_get_wtime();
 
 
     // Printing sum matrix
-    printf("[Core %d]: Sum matrix: \n", omp_get_thread_num());
+    printf("[Core %d]: PARALLEL Sum matrix: \n", omp_get_thread_num());
     matrix_square_print(sum_matrix->mtx_ptr, sum_matrix->M);
+    printf("\n");
+
+
+    // [SAME ALGORITHM BUT SEQUENTIAL]
+    // Sequential init time
+    double sequential_init_time = omp_get_wtime();
+
+    struct matrix * sequential_sum = initialize_sum_matrix(sum_matrix->M);
+    for (int i = 0; i < np*np; ++i) {
+        sequential_sum = matrix_sum(sequential_sum, &mtx_array[i]);
+    }
+
+    // Sequential end time
+    double sequential_end_time = omp_get_wtime();
+
+
+    // Printing again sum matrix
+    printf("[Core %d]: SEQUENTIAL Sum matrix: \n", omp_get_thread_num());
+    matrix_square_print(sequential_sum->mtx_ptr, sequential_sum->M);
+    printf("\n");
+
+
+    // Checking if sequential_sum and sum_matrix are the same
+    if (matrix_compare(sequential_sum, sum_matrix) == -1) {
+        easy_stderr("Sum matrix is not what it should be!", -1);
+    }
+
+
+    // Execution times
+    double parallel_exec_time = parallel_end_time - parallel_init_time;
+    double sequential_exec_time = sequential_end_time - sequential_init_time;
+
+    printf("[EXECUTION TIMES]:\n"
+           "Parallel algorithm with np = %d: [%f]\n"
+           "Sequential algorithm: [%f]", np, parallel_exec_time, sequential_exec_time);
 
 
     return 0;

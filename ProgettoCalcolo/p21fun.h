@@ -12,18 +12,14 @@
 #include <math.h>
 
 
-#define MAX_RAND 9
+// MAX_RAND for mtxtxt
+#define MAX_RAND 256
 
 
+// Matrix record
 struct matrix {
     int ** mtx_ptr;
     int M;
-};
-
-
-struct offset {
-    int x;
-    int y;
 };
 
 
@@ -83,5 +79,8 @@ struct matrix * initialize_sum_matrix(int size);
 
 // Returns the sum of mat1 and mat2
 struct matrix * matrix_sum(struct matrix * mat1, struct matrix * mat2);
+
+// Returns -1 if the matrices are not the same, 0 otherwise
+int matrix_compare(struct matrix  * mat1, struct matrix * mat2);
 
 #endif //PROGETTOCALCOLO_P21FUN_H

@@ -6,7 +6,12 @@ int int_digits_no(int num) {
 
 
 int rand_no(int max_rand) {
-    return rand() % max_rand + 1;
+    if (rand() % 2 == 0) {
+        return rand() % max_rand;
+    }
+    else {
+        return -(rand() % max_rand);
+    }
 }
 
 
@@ -305,6 +310,23 @@ struct matrix * matrix_sum(struct matrix * mat1, struct matrix * mat2) {
     }
 
     return out;
+}
+
+
+int matrix_compare(struct matrix * mat1, struct matrix * mat2) {
+    if (mat1->M != mat2->M) {
+        return -1;
+    }
+
+    for (int i = 0; i < mat1->M; ++i) {
+        for (int j = 0; j < mat1->M; ++j) {
+            if (mat1->mtx_ptr[i][j] != mat2->mtx_ptr[i][j]) {
+                return -1;
+            }
+        }
+    }
+
+    return 0;
 }
 
 
