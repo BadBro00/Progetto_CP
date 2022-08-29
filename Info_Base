@@ -25,10 +25,6 @@ ssh-copy-id master
 ssh-copy-id node01
 ssh-copy-id node02
 ssh-copy-id node03
-
--------------------------------
-ARRIVATO QUI
-
 -----------------------------------
 //Ci connettiamo al nodo MASTER dal cluster AWS:
 ssh -i cpd1.pem ubuntu@<master_node>
