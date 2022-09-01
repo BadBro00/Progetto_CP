@@ -23,6 +23,7 @@ int main(int argc, char * argv[]) {
            "np: %s\n\n",
            argv[1], argv[2]);
 
+    //Pausa n secondi
 
     // Argument conversion
     // np
@@ -35,7 +36,9 @@ int main(int argc, char * argv[]) {
     printf("matrix of size %dx%d:\n", matrix->M, matrix->M);
     matrix_square_print(matrix->mtx_ptr, matrix->M);
     printf("\n");
-
+    
+    //pausa n secondi
+    
     // printing data
     printf("[MASTER THREAD]:\n"
            "RECAP:\n"
@@ -75,8 +78,9 @@ int main(int argc, char * argv[]) {
         printf("[Block %d]:\n", i);
         matrix_square_print(mtx_array[i].mtx_ptr, mtx_array[0].M);
         printf("\n");
+        //pausa n secondi
     }
-
+    
 
     // Setting number of threads for parallel region 2
     omp_set_num_threads(np);
