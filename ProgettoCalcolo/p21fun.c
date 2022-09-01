@@ -166,7 +166,7 @@ void matrix_build(int ** mtx_ptr, char * file_buf, const char * delimit, const c
     }
 }
 
-
+-------------------------------DEPRECATA------------------------------------------------------------------------
 void matrix_build_as_array(int * mtx_array_ptr, char * file_buf, const char * delimit, const char * delimit2) {
     // Vars for strtok_r
     char * tok, * tok2;
@@ -182,7 +182,7 @@ void matrix_build_as_array(int * mtx_array_ptr, char * file_buf, const char * de
         }
     }
 }
-
+------------------------------------------------------------------------------------------------------------------
 
 void matrix_print(int ** mtx, int row, int col) {
     for (int i = 0; i < row; ++i) {
@@ -193,7 +193,7 @@ void matrix_print(int ** mtx, int row, int col) {
     }
 }
 
-
+//useless
 void matrix_square_print(int ** mtx, int m) {
     matrix_print(mtx, m, m);
 }
@@ -204,15 +204,12 @@ struct matrix * matrix_alloc(const int main_matrix_fd) {
     char * file_buf;
     if ((file_buf = matrix_read(main_matrix_fd)) == NULL)
         easy_stderr("matrix was not read on file_buf!", -1);
-
     // *** DEBUG *** printf("%s\n", file_buf);
-
 
     // Checking if the matrix is square.
     char delimit[] = "\n";
     char delimit2[] = " ";
     int M; // Size of the square matrix
-
     // We need to pass a copy of file_buf because strtok_r modifies it.
     char * buf_to_pass = (char *) malloc(sizeof(char) * strlen(file_buf));
     if ((M = matrix_check_square(strcpy(buf_to_pass, file_buf), delimit, delimit2)) == 0) {
@@ -220,24 +217,16 @@ struct matrix * matrix_alloc(const int main_matrix_fd) {
         free(buf_to_pass);
         easy_stderr("the matrix is not square!", -1);
     }
-
-
     // Creating the actual C int matrix (dinamically allocated).
     int ** matrix_ptr = alloc_2D_array(M);
-
-
     // Building the actual matrix.
     matrix_build(matrix_ptr, strcpy(buf_to_pass, file_buf), delimit, delimit2);
-
-
     // *** DEBUG *** matrix_print(matrix_ptr, M, M);
-
 
     // Creating the return struct
     struct matrix * to_return = (struct matrix *) malloc(sizeof(struct matrix));
     to_return->mtx_ptr = matrix_ptr;
     to_return->M = M;
-
     return to_return;
 }
 
@@ -245,79 +234,59 @@ struct matrix * matrix_alloc(const int main_matrix_fd) {
 struct matrix * matrix_block_extract(struct matrix * mtx, int np, int np_id) {
     // Calculating block size
     int block_size = mtx->M / np;
-
-
     // Aliasing + offset calc
     int block_no = np*np;
-
     int col_offset = (np_id * block_size) % mtx->M;
-    int row_offset = np_id / block_no;
-
+    int row_offset = np_id / np * block_size;
     // *** DEBUG *** printf("[Thread %d]:\nBlock size: %d\nCol offset: %d\nRow offset: %d\n\n", np_id, block_size, col_offset, row_offset);
-
 
     // Allocating the matrix
     struct matrix * out = (struct matrix *) malloc(sizeof(struct matrix));
     out->mtx_ptr = alloc_2D_array(block_size);
     out->M = block_size;
-
-
     // Building the block
     for (int row = 0; row < block_size ; row++) {
         for (int col = 0; col < block_size; col++) {
             out->mtx_ptr[row][col] = mtx->mtx_ptr[row + row_offset][col + col_offset];
         }
     }
-
-
     return out;
 }
-
 
 struct matrix * initialize_sum_matrix(int size) {
     // Allocating the matrix
     struct matrix * out = (struct matrix *) malloc(sizeof(struct matrix));
     out->mtx_ptr = alloc_2D_array(size);
     out->M = size;
-
-
     // Initializing all matrix's elements to 0
     for (int i = 0; i < out->M; ++i) {
         for (int j = 0; j < out->M; ++j) {
             out->mtx_ptr[i][j] = 0;
         }
     }
-
     return out;
 }
-
 
 struct matrix * matrix_sum(struct matrix * mat1, struct matrix * mat2) {
     // *** DEBUG *** printf("[Thread %d]: mat1 size: %d, mat2 size: %d\n", omp_get_thread_num(), mat1->M, mat2->M);
 
     if (mat1->M != mat2->M)
         easy_stderr("You can't sum up matrices with different size!", -1);
-
-
     struct matrix * out = (struct matrix *) malloc(sizeof(struct matrix));
     out->mtx_ptr = alloc_2D_array(mat1->M);
     out->M = mat1->M;
-
     for (int i = 0; i < out->M; ++i) {
         for (int j = 0; j < out->M; ++j) {
             out->mtx_ptr[i][j] = mat1->mtx_ptr[i][j] + mat2->mtx_ptr[i][j];
         }
     }
-
     return out;
 }
-
-
+----------------------------DEBUG-----------------------------------
 int matrix_compare(struct matrix * mat1, struct matrix * mat2) {
     if (mat1->M != mat2->M) {
         return -1;
     }
-
     for (int i = 0; i < mat1->M; ++i) {
         for (int j = 0; j < mat1->M; ++j) {
             if (mat1->mtx_ptr[i][j] != mat2->mtx_ptr[i][j]) {
@@ -325,24 +294,6 @@ int matrix_compare(struct matrix * mat1, struct matrix * mat2) {
             }
         }
     }
-
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-------------------------------------------------------------------
