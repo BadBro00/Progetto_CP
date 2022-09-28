@@ -4,7 +4,7 @@
  * [FATTO] Il core master deve leggere una matrice di dimensioni MxM.
  * [FATTO] Ogni core deve estrarre un blocco di dimensioni (M/np)x(M/np),
  * [FATTO] conservandone i valori in npxnp matrici.
- * TODO: Infine, i core devono collaborare per calcolare la somma delle matrici.
+ * [FATTO]: Infine, i core devono collaborare per calcolare la somma delle matrici.
  */
 
 
@@ -23,8 +23,6 @@ int main(int argc, char * argv[]) {
            "np: %s\n\n",
            argv[1], argv[2]);
 
-    //Pausa n secondi
-
     // Argument conversion
     // np
     int np = (int) strtol(argv[2], NULL, 10);
@@ -36,8 +34,6 @@ int main(int argc, char * argv[]) {
     printf("matrix of size %dx%d:\n", matrix->M, matrix->M);
     matrix_square_print(matrix->mtx_ptr, matrix->M);
     printf("\n");
-    
-    //pausa n secondi
     
     // printing data
     printf("[MASTER THREAD]:\n"
@@ -117,7 +113,6 @@ int main(int argc, char * argv[]) {
 
         // *** DEBUG *** printf("[Core %d]: sum_mtx:\n", tid); matrix_square_print(temp_sum->mtx_ptr, temp_sum->M);
 
-
         // Job subdivision
         if (tid < reminder) {
             nloc++;
@@ -126,7 +121,6 @@ int main(int argc, char * argv[]) {
         else {
             step = reminder;
         }
-
 
         // SUM ALGORITHM
         for (int i = 0; i < nloc; ++i) {
@@ -140,12 +134,10 @@ int main(int argc, char * argv[]) {
     // Parallel end time
     double parallel_end_time = omp_get_wtime();
 
-
     // Printing sum matrix
     printf("[Core %d]: PARALLEL Sum matrix: \n", omp_get_thread_num());
     matrix_square_print(sum_matrix->mtx_ptr, sum_matrix->M);
     printf("\n");
-
 
     // [SAME ALGORITHM BUT SEQUENTIAL]
     // Sequential init time
@@ -159,18 +151,15 @@ int main(int argc, char * argv[]) {
     // Sequential end time
     double sequential_end_time = omp_get_wtime();
 
-
     // Printing again sum matrix
     printf("[Core %d]: SEQUENTIAL Sum matrix: \n", omp_get_thread_num());
     matrix_square_print(sequential_sum->mtx_ptr, sequential_sum->M);
     printf("\n");
 
-
     // Checking if sequential_sum and sum_matrix are the same
     if (matrix_compare(sequential_sum, sum_matrix) == -1) {
         easy_stderr("Sum matrix is not what it should be!", -1);
     }
-
 
     // Execution times
     double parallel_exec_time = parallel_end_time - parallel_init_time;
@@ -179,7 +168,6 @@ int main(int argc, char * argv[]) {
     printf("[EXECUTION TIMES]:\n"
            "Parallel algorithm with np = %d: [%f]\n"
            "Sequential algorithm: [%f]", np, parallel_exec_time, sequential_exec_time);
-
 
     return 0;
 }
