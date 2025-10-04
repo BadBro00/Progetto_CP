@@ -15,7 +15,7 @@
 Questo progetto viene eseguito in **Docker**, runnato tramite *WSL*.\
 Il `Dockerfile` e' scaricato dalla repo del docente [wget https://raw.githubusercontent.com/delucap/Docker_MPI/main/Dockerfile].
 
-**Setting Ambiente di Lavoro**:\
+**Setting Ambiente di Lavoro**:
  - `docker build -t cpd_mpi .`
  - `docker run -it -d -t cpd_mpi:latest`
  - `docker ps`
@@ -28,7 +28,7 @@ Successivamente si puo' eseguire, *per ogni istanza*, ciascuno dei seguenti coma
 Per ogni nodo, eseguire `ifconfig` e segnare gli `IP` di ciascun nodo.\
 Va eseguito poi `sh setup.sh <IP_1> <IP_2> <IP_3> <IP_4>` .
 
-**Cambio Keys e Utenti**:\
+**Cambio Keys e Utenti**:
 - `su cpd2021.`
 - `ssh-copy-id master`
 - `ssh-copy-id node01`
