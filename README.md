@@ -78,7 +78,7 @@ Il progetto e' strutturato nel seguente modo:\
 
 ### Funzionamento
 
-Il programma segue questo flusso:\
+Il programma segue questo flusso:
 1. Si estrae `np` dagli argument passati al main
 2. Tramite `OMP`, si setta il numero di threads da utilizzare
 3. Viene generata la matrice, e l'array di matrici (mediante `struct matrix * mtx_array = (struct matrix *) malloc(sizeof(struct matrix) * (np*np));`)
